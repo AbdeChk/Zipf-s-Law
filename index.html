@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zipf's Law</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+
+<style>
+  body {
+    font-family: monospace;
+    margin: 0;
+    padding: 20px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center;
+  }
+
+  .wrapper {
+    max-width: 900px;
+    width: 100%;
+    background: #fff;
+    padding: 20px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  h3, p {
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  textarea {
+    width: 97%;
+    height: 78px;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  #wordCount {
+    font-style: italic;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+    margin-top: 30px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f0f0f0;
+  }
+
+  input[type="file"] {
+  display: none; 
+}
+
+.custom-file-upload {
+  display: table;
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  margin: 10px auto;
+}
+
+#analyzeBtn {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+#scaleToggleBtn{
+  padding: 10px 20px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+</style>
+
+</head>
+<body>
+  <div class="wrapper">
+    <h3>Zipf's Law</h3>
+    <p>
+    <a href="https://en.wikipedia.org/wiki/Zipf%27s_law" target="_blank">Zipf’s law</a>, formulated by George Kingsley Zipf, states that in a natural language corpus, the frequency <em>f(r)</em> of a word is inversely proportional to its rank <em>r</em> in the frequency distribution, given by <span>\(f(r) = \frac{C}{r^s}\)</span>, where <em>r = 1, 2, 3, …</em> is the rank and <em>s</em> (the Zipf coefficient) describes the slope on a log–log scale. This pattern also appears in city populations, income distributions, and website traffic...
+    </p>
+
+    <br><br>
+    <label for="fileInput" class="custom-file-upload">
+      Upload file (txt)
+    </label>
+    <input type="file" id="fileInput" accept=".txt">
+
+    
+
+    <textarea id="inputText" placeholder="Paste your text here (max 10000 words)..."></textarea>
+
+    <div class="controls">
+      <button id="analyzeBtn">Analyze</button>
+      <div id="wordCount">Words: 0 / 10000</div>
+    </div>
+
+    <div class="container">
+      <div id="results"></div>
+      <div id="chartContainer" style="width: 100%; height: 300px;">
+        <button id="scaleToggleBtn" style="display:none;">Log / Linear</button>
+        <canvas id="zipfChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+function updateWordCount() {
+  const inputEl = document.getElementById('inputText');
+  let words = inputEl.value.trim().split(/\s+/).filter(Boolean);
+  let count = words.length;
+
+  if (count > 10000) {
+    words = words.slice(0, 10000);
+    inputEl.value = words.join(" ");
+    count = 10000;
+  }
+
+  document.getElementById('wordCount').textContent = `Words: ${count} / 10000`;
+}
+
+function analyzeText(text) {
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const total = words.length;
+  const freq = {};
+
+  words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .map(([word, count], i) => ({
+      word,
+      freq: count,
+      rank: i + 1,
+      ratio: `${((count / total) * 100).toFixed(2)}%`
+    }));
+}
+
+function zipfCoefficient(data) {
+  const logRanks = data.map(d => Math.log(d.rank));
+  const logFreqs = data.map(d => Math.log(d.freq));
+  const n = data.length;
+
+  const meanX = logRanks.reduce((a, b) => a + b, 0) / n;
+  const meanY = logFreqs.reduce((a, b) => a + b, 0) / n;
+
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) {
+    num += (logRanks[i] - meanX) * (logFreqs[i] - meanY);
+    den += (logRanks[i] - meanX) ** 2;
+  }
+  return -(num / den);
+}
+
+let useLogScale = true;
+let zipfChart;
+
+function renderChart(ranked) {
+  const ctx = document.getElementById('zipfChart').getContext('2d');
+  const topWords = ranked.slice(0, 20);
+  const dataPoints = topWords.map(r => ({ x: r.rank, y: r.freq, word: r.word }));
+  const coeff = zipfCoefficient(ranked).toFixed(2);
+
+  if (zipfChart?.destroy) zipfChart.destroy();
+
+  zipfChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'Word Frequency',
+        data: dataPoints,
+        borderColor: 'blue',
+        backgroundColor: 'rgba(0,0,255,0.1)',
+        tension: 0,
+        pointRadius: 4,
+        showLine: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: `s ≈ ${coeff}`,
+          font: { size: 18 }
+        },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `Word: ${ctx.raw.word}, Freq: ${ctx.raw.y}`
+          }
+        },
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          type: useLogScale ? 'logarithmic' : 'linear',
+          title: { display: true, text: 'Rank' },
+          min: 1,
+          grid: { display: false }
+        },
+        y: {
+          type: useLogScale ? 'logarithmic' : 'linear',
+          title: { display: true, text: 'Frequency' },
+          min: 1,
+          grid: { display: false }
+        }
+      }
+    }
+  });
+
+  document.getElementById('scaleToggleBtn').style.display = 'inline-block';
+}
+
+function toggleScale() {
+  useLogScale = !useLogScale;
+  if (zipfChart) {
+    zipfChart.options.scales.x.type = useLogScale ? 'logarithmic' : 'linear';
+    zipfChart.options.scales.y.type = useLogScale ? 'logarithmic' : 'linear';
+    zipfChart.update();
+  }
+}
+
+function renderTable(ranked) {
+  const resultsEl = document.getElementById("results");
+  resultsEl.innerHTML = "";
+
+  const table = document.createElement("table");
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  ["Rank", "Word", "Frequency", "Ratio"].forEach(text => {
+    const th = document.createElement("th");
+    th.textContent = text;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  ranked.slice(0, 10).forEach(r => {
+    const row = document.createElement("tr");
+    [r.rank, r.word, r.freq, r.ratio].forEach(val => {
+      const td = document.createElement("td");
+      td.textContent = val;
+      row.appendChild(td);
+    });
+    tbody.appendChild(row);
+  });
+
+  table.appendChild(tbody);
+  resultsEl.appendChild(table);
+}
+
+function runAnalysis() {
+  const text = document.getElementById("inputText").value.trim();
+  if (!text) {
+    alert("Enter some text or upload a file.");
+    return;
+  }
+  const ranked = analyzeText(text);
+  renderChart(ranked);
+  renderTable(ranked);
+}
+
+function UploadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type !== "text/plain") {
+    alert("Only .txt files are allowed.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let content = e.target.result;
+    let words = content.split(/\s+/);
+
+    if (words.length > 10000) {
+      alert("File exceeds 10000 words. Only the first 10000 words will be used.");
+      content = words.slice(0, 10000).join(" ");
+    }
+
+    document.getElementById('inputText').value = content;
+    updateWordCount();
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('analyzeBtn').addEventListener('click', runAnalysis);
+document.getElementById('inputText').addEventListener('input', updateWordCount);
+document.getElementById('fileInput').addEventListener('change', UploadFile);
+document.getElementById('scaleToggleBtn').addEventListener('click', toggleScale);
+
+updateWordCount();
+</script>
+</body>
+</html>
