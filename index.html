@@ -10,101 +10,125 @@
   </script>
 
 <style>
-  body {
-    font-family: monospace;
-    margin: 0;
-    padding: 20px;
-    background: #f9f9f9;
-    display: flex;
-    justify-content: center;
-  }
+body {
+  font-family: monospace; 
+  margin: 0;
+  padding: 20px;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  color: #333; 
+}
 
-  .wrapper {
-    max-width: 900px;
-    width: 100%;
-    background: #fff;
-    padding: 20px 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  }
+.wrapper {
+  max-width: 900px;
+  width: 100%;
+  background: #fff;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-family: inherit; 
+}
 
-  h3, p {
-    text-align: center;
-    margin: 10px 0;
-  }
+h2, p, textarea, select, button, label, table, th, td, #wordCount {
+  font-family: inherit; 
+}
 
-  textarea {
-    width: 98%;
-    height: 78px;
-    margin-bottom: 10px;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    resize: vertical;
-  }
+h2{
+  text-align: center;
+  margin: 10px 0;
+}
+p {
+  font-size: 0.9rem;                 
+  line-height: 1.6;                 
+  text-align: justify;              
+  padding: 0.5em;                 
+}
 
-  .controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
+textarea {
+  width: 98%;
+  height: 78px;
+  margin-bottom: 10px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  resize: vertical;
+}
 
-  #wordCount {
-    font-style: italic;
-  }
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
 
-  .container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
-    margin-top: 30px;
-  }
+#wordCount {
+  font-style: italic;
+}
 
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    font-size: 14px;
-  }
+select {
+  padding: 0.4em 0.8em;
+  font-size: 14px;
+  border: 1.5px solid #4CAF50;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
 
-  th, td {
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    text-align: left;
-  }
+select:hover,
+select:focus {
+  border-color: #388E3C;
+  outline: none;
+}
 
-  th {
-    background-color: #f0f0f0;
-  }
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 30px;
+}
 
-  input[type="file"] {
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+input[type="file"] {
   display: none; 
 }
 
 .custom-file-upload {
   display: table;
-  padding: 10px 20px;
+  padding: 5px 10px;
   cursor: pointer;
   background-color: #f0f0f0;
   border-radius: 5px;
   margin: 10px auto;
 }
 
-#analyzeBtn {
-  padding: 10px 20px;
+#analyzeBtn,
+#scaleToggleBtn {
+  padding: 5px 10px;
   cursor: pointer;
   border: none;
   border-radius: 5px;
-}
-
-#scaleToggleBtn{
-  padding: 10px 20px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
+  font-family: inherit; 
 }
 
 </style>
@@ -112,9 +136,9 @@
 </head>
 <body>
   <div class="wrapper">
-    <h3>Zipf's Law</h3>
+    <h2>Zipf's Law</h2>
     <p>
-    <a href="https://en.wikipedia.org/wiki/Zipf%27s_law" target="_blank">Zipf’s law</a>, formulated by George Kingsley Zipf, states that in a natural language corpus, the frequency <em>f(r)</em> of a word is inversely proportional to its rank <em>r</em> in the frequency distribution, given by <span>\(f(r) = \frac{1}{r^s}\)</span>, where <em>r = 1, 2, 3, …</em> is the rank and <em>s</em> (the Zipf coefficient) determines the slope when frequency is plotted against rank on a log–log scale. Interestingly, this pattern also emerges in city populations, income distributions, and website traffic..
+    <a href="https://en.wikipedia.org/wiki/Zipf%27s_law" target="_blank">Zipf’s law</a>, formulated by George Kingsley Zipf, states that in a natural language corpus, the frequency <em>f(r)</em> of a word is inversely proportional to its rank <em>r</em> in the frequency distribution, given by <span>\(f(r) = \frac{1}{r^s}\)</span>, where <em>r = 1, 2, 3, …</em> is the rank and <em>s</em> (the Zipf coefficient) determines the slope when frequency is plotted against rank on a log–log scale. Interestingly, this pattern can also be observed in city populations, income distributions, and website traffic. try to test your own texts to see whether they follow Zipf's law. Make sure the text is long enough; otherwise, the results may be unreliable or noisy.
     </p>
 
     <br><br>
@@ -124,7 +148,6 @@
     <input type="file" id="fileInput" accept=".txt">
 
     
-
     <textarea id="inputText" placeholder="Paste your text here (max 10000 words)..."></textarea>
 
     <div class="controls">
@@ -143,18 +166,25 @@
 
 <script>
 
+
+const MAX_WORDS = 10000;
+const MAX_TABLE_RANKS = 10;
+const MAX_CHART_RANKS = 50;
+let useLogScale = true;
+let zipfChart;
+
 function updateWordCount() {
   const inputEl = document.getElementById('inputText');
   let words = inputEl.value.trim().split(/\s+/).filter(Boolean);
   let count = words.length;
 
-  if (count > 10000) {
-    words = words.slice(0, 10000);
+  if (count > MAX_WORDS) {
+    words = words.slice(0, MAX_WORDS);
     inputEl.value = words.join(" ");
-    count = 10000;
+    count = MAX_WORDS;
   }
 
-  document.getElementById('wordCount').textContent = `Words: ${count} / 10000`;
+  document.getElementById('wordCount').textContent = `Words: ${count} / ${MAX_WORDS}`;
 }
 
 function analyzeText(text) {
@@ -179,7 +209,7 @@ function analyzeText(text) {
     }));
 }
 
-function zipfCoefficient(data) {
+function zipfCoeff(data) {
   const logRanks = data.map(d => Math.log(d.rank));
   const logFreqs = data.map(d => Math.log(d.freq));
   const n = data.length;
@@ -195,14 +225,11 @@ function zipfCoefficient(data) {
   return -(num / den);
 }
 
-let useLogScale = true;
-let zipfChart;
-
 function renderChart(ranked) {
   const ctx = document.getElementById('zipfChart').getContext('2d');
-  const topWords = ranked.slice(0, 20);
+  const topWords = ranked.slice(0, MAX_CHART_RANKS);
   const dataPoints = topWords.map(r => ({ x: r.rank, y: r.freq, word: r.word }));
-  const coeff = zipfCoefficient(ranked).toFixed(2);
+  const coeff = zipfCoeff(ranked).toFixed(2);
 
   if (zipfChart?.destroy) zipfChart.destroy();
 
@@ -281,7 +308,7 @@ function renderTable(ranked) {
   table.appendChild(thead);
 
   const tbody = document.createElement("tbody");
-  ranked.slice(0, 10).forEach(r => {
+  ranked.slice(0, MAX_TABLE_RANKS).forEach(r => {
     const row = document.createElement("tr");
     [r.rank, r.word, r.freq, r.ratio].forEach(val => {
       const td = document.createElement("td");
@@ -320,9 +347,9 @@ function UploadFile(event) {
     let content = e.target.result;
     let words = content.split(/\s+/);
 
-    if (words.length > 10000) {
-      alert("File exceeds 10000 words. Only the first 10000 words will be used.");
-      content = words.slice(0, 10000).join(" ");
+    if (words.length > MAX_WORDS) {
+      alert("File exceeds ${MAX_WORDS} words. Only the first ${MAX_WORDS} words will be used.");
+      content = words.slice(0, MAX_WORDS).join(" ");
     }
 
     document.getElementById('inputText').value = content;
