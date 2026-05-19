@@ -30,14 +30,14 @@ Users can paste text or upload a `.txt` file, then visualize word frequencies wi
 
 ## How to Use
 
-1. Open `index.html`
+1. Visit [Zipf-s-Law](https://abdechk.github.io/Zipf-s-Law/)
 2. Paste text or upload a `.txt` file
 3. Click **Analyze**
 4. View the chart and results table
 
 ---
 
-## Run Locally
+## Run Locally(optinal)
 
 You can open the file directly in your browser:
 
@@ -63,9 +63,9 @@ http://localhost:8000
 
 Zipf's Law states that the frequency of a word is inversely proportional to its rank:
 
-\[
+```math
 f(r) = \frac{1}{r^s}
-\]
+```
 
 This behavior appears in many natural language texts.
 
